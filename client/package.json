@@ -1,0 +1,27 @@
+{
+  "name": "timesheet",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Saulo Medeiros de Araujo",
+  "license": "GNU Affero General Public License",
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-concurrent": "^2.0.1",
+    "grunt-nodemon": "^0.4.0",
+    "grunt-tsd": "^0.1.0",
+    "grunt-typescript": "^0.7.0",
+    "typescript": "^1.5.3"
+  },
+  "dependencies": {
+    "any-db": "^2.1.0",
+    "any-db-postgres": "^2.1.4",
+    "lodash": "^3.10.1",
+    "moment": "^2.10.6",
+    "q": "^1.4.1",
+    "restify": "^4.0.0"
+  }
+}
