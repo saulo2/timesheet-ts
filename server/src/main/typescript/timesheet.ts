@@ -139,6 +139,7 @@ function getTimesheet(start: Date, days: number): q.IPromise<ITimesheet> {
 
 let server = restify.createServer()
 server.use(restify.queryParser())
+server.use(restify.CORS())
 
 server.get("/timesheets/:start", function(req, res, next) {
     let start = moment.utc(req.params.start).toDate()
