@@ -24,7 +24,7 @@ declare module api {
         name: string
     }
     
-    interface IEntryCell {
+    export interface IEntryCell {
         column: number
         time: number
     }
