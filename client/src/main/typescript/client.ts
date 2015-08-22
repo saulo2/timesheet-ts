@@ -11,7 +11,6 @@ timesheetModule.config(["$routeProvider", function($routeProvider: angular.route
 		controller: "timesheetController",
 		resolve: {			
 			timesheet: ["$http", "$route", function($http: angular.IHttpService, $route: angular.route.IRouteService) {
-				console.log($route.current.params)
 				return $http<api.ITimesheetResource>({
 					method: "GET",
 					url: `http://localhost:8080/timesheets/${$route.current.params["start"]}`,
