@@ -21,7 +21,7 @@
 			<td rowspan="{{projectRow.taskRows.length}}" ng-show="$first">{{projectRow.project.name}}</td>
 			<td>{{taskRow.task.name}}</td>
 			<td ng-repeat="entryCell in taskRow.entryCells">
-				<input type="text" ng-model="entryCell.time"/>
+				<input type="text" ng-model="entryCell.time" ui-number-mask="1"/>
 			</td>
 		</tr>		
 	</tbody>
