@@ -1,2 +1,2 @@
 # timesheet-ts
-A timesheet application developed in TypeScript
+A timesheet web application (server and client) developed in TypeScript

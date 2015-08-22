@@ -10,13 +10,13 @@ module.exports = function(grunt) {
                 options: {
                     logConcurrentOutput: true
                 },
-                tasks: ["typescript:watch", "nodemon"]                
+                tasks: ["nodemon", "typescript:watch"]                
             }
         },
 
         nodemon: {
             target: {
-                script: typescript.dest + "/timesheet.js"
+                script: typescript.dest + "/impl.js"
             }
         },
 
@@ -54,4 +54,5 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-typescript");
 
     grunt.registerTask("default", ["typescript:target", "concurrent"]);
+    grunt.registerTask("install", ["tsd"]);
 };

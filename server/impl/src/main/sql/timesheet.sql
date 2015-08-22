@@ -51,4 +51,22 @@ insert into PROJECT_TASK (PROJECT_ID, TASK_ID) values (2, 3);
 insert into PROJECT_TASK (PROJECT_ID, TASK_ID) values (2, 4);
 insert into PROJECT_TASK (PROJECT_ID, TASK_ID) values (2, 5);
 
+insert into PROJECT_TASK (PROJECT_ID, TASK_ID) values (3, 1);
+insert into PROJECT_TASK (PROJECT_ID, TASK_ID) values (3, 2);
+insert into PROJECT_TASK (PROJECT_ID, TASK_ID) values (3, 3);
+insert into PROJECT_TASK (PROJECT_ID, TASK_ID) values (3, 4);
+insert into PROJECT_TASK (PROJECT_ID, TASK_ID) values (3, 5);
+
+insert into PROJECT_TASK (PROJECT_ID, TASK_ID) values (4, 1);
+insert into PROJECT_TASK (PROJECT_ID, TASK_ID) values (4, 2);
+insert into PROJECT_TASK (PROJECT_ID, TASK_ID) values (4, 3);
+insert into PROJECT_TASK (PROJECT_ID, TASK_ID) values (4, 4);
+insert into PROJECT_TASK (PROJECT_ID, TASK_ID) values (4, 5);
+
+insert into PROJECT_TASK (PROJECT_ID, TASK_ID) values (5, 1);
+insert into PROJECT_TASK (PROJECT_ID, TASK_ID) values (5, 2);
+insert into PROJECT_TASK (PROJECT_ID, TASK_ID) values (5, 3);
+insert into PROJECT_TASK (PROJECT_ID, TASK_ID) values (5, 4);
+insert into PROJECT_TASK (PROJECT_ID, TASK_ID) values (5, 5);
+
 insert into ENTRY (PROJECT_ID, TASK_ID, DATE, TIME) values (1, 1, CURRENT_DATE, 5.5);

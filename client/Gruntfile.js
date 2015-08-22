@@ -5,20 +5,21 @@ module.exports = function(grunt) {
     };
 
     grunt.initConfig({
-        concurrent: {
+        bower: {            
             target: {
                 options: {
-                    logConcurrentOutput: true
-                },
-                tasks: ["typescript:watch", "nodemon"]                
+                    targetDir: "bower_components"
+                }                
             }
         },
-
-        nodemon: {
+        
+        connect: {
             target: {
-                script: typescript.dest + "/timesheet.js"
+                options: {
+                    port: 8081
+                }
             }
-        },
+        },        
 
         tsd: {
             target: {
@@ -47,11 +48,12 @@ module.exports = function(grunt) {
             }
         }
     });
-
-    grunt.loadNpmTasks("grunt-concurrent");
-    grunt.loadNpmTasks("grunt-nodemon");
+    
+    grunt.loadNpmTasks("grunt-bower-task");
+    grunt.loadNpmTasks("grunt-contrib-connect");
     grunt.loadNpmTasks("grunt-tsd");
     grunt.loadNpmTasks("grunt-typescript");
 
-    grunt.registerTask("default", ["typescript:target", "concurrent"]);
+    grunt.registerTask("default", ["connect", "typescript"]);    
+    grunt.registerTask("install", ["bower", "tsd"]);
 };

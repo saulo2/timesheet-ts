@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+
+<html ng-app="timesheetModule">
+	<head>
+		<meta charset="UTF-8"/>
+		
+		<script src="../../../bower_components/jquery/dist/jquery.min.js"></script>
+		
+		<link rel="stylesheet" href="../../../bower_components/bootstrap/dist/css/bootstrap.min.css"/>
+		<script src="../../../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+
+		<script src="../../../bower_components/angularjs/angular.min.js"></script>
+		
+		<link rel="stylesheet" href="../../../bower_components/angular-loading-bar/build/loading-bar.min.css"/>
+		<script src="../../../bower_components/angular-loading-bar/build/loading-bar.min.js"></script>
+		
+		<script src="../../../bower_components/angular-i18n/angular-locale_pt-br.js"></script>		
+		<script src="../../../bower_components/angular-route/angular-route.min.js"></script>
+		<script src="../../../bower_components/ngSticky/dist/sticky.min.js"></script>
+
+		<script src="../../../bower_components/moment/min/moment.min.js"></script>
+		
+		<script src="../../../target/javascript/client.js"></script>
+		
+		<style>
+			body {
+				padding-top: 60px;	
+			}
+			
+			table.timesheet > thead > tr > th,
+			table.timesheet > tbody > tr > td {
+				background-color: white;
+				
+				text-align: center;
+
+				vertical-align: middle;
+			}
+			
+			table.timesheet > thead > tr:nth-child(1) > th:nth-child(1),
+			table.timesheet > thead > tr:nth-child(1) > th:nth-child(2),
+			table.timesheet > tbody > tr:nth-child(1) > td:nth-child(1), 
+			table.timesheet > tbody > tr:nth-child(1) > td:nth-child(2) {
+				width: 15%;
+			}
+			
+			table.timesheet > tbody > tr > td > input[type="text"] {
+				border: none;
+				
+				text-align: center;				
+				
+				width: 100%;				
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<ng-view></ng-view>	
+		</div>		
+	</body>
+</html>

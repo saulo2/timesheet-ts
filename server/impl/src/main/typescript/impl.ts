@@ -3,6 +3,8 @@
 /// <reference path="../../../typings/moment/moment-node.d.ts"/>
 /// <reference path="../../../typings/q/Q.d.ts"/>
 /// <reference path="../../../typings/restify/restify.d.ts"/>
+/// <reference path="../../../../api/src/main/typescript/api.d.ts"/>
+
 import anyDB = require("any-db")
 import _ = require("lodash")
 import moment = require("moment")
@@ -12,40 +14,39 @@ import restify = require("restify")
 let pool = anyDB.createPool("postgres://timesheet:timesheet@localhost:5432/timesheet", null)
 
 function query<Row>(text: string, params?: any[]): q.IPromise<Row[]> {
-    let d = q.defer<Row[]>()
+    let d = q.defer()
     pool.query(text, params, function(error, result) {
         if (error) {
             d.reject(error)
         } else {
-            d.resolve(<Row[]> result.rows)
+            d.resolve(result.rows)
         }
     })
     return d.promise
 }
 
-interface IProject {
+interface IProjectRecord {
     id: number
     name: string
-    tasks: ITask[]
 }
 
-function getProjects(): q.IPromise<IProject[]> {
+function getProjects(): q.IPromise<IProjectRecord[]> {
     return query(`
         select * 
           from PROJECT
     `)
 }
 
-interface ITask {
+interface ITaskRecord {
     id: number
     name: string
 }
 
-interface IProjectIdTask extends ITask {
+interface IProjectIdTask extends ITaskRecord {
     project_id: number
 }
 
-function getProjectIdTasks(): q.IPromise<_.Dictionary<ITask[]>> {
+function getProjectIdTasks(): q.IPromise<_.Dictionary<ITaskRecord[]>> {
     return query<IProjectIdTask>(`
         select PROJECT_TASK.PROJECT_ID, TASK.* 
           from PROJECT_TASK join TASK on PROJECT_TASK.TASK_ID = TASK.ID
@@ -63,14 +64,14 @@ function getProjectIdTasks(): q.IPromise<_.Dictionary<ITask[]>> {
     })
 }
 
-interface IEntryRow {
+interface IEntryRecord {
     project_id: number
     task_id: number
     date: Date
     time: string    
 }
 
-function getEntries(start: Date, end: Date): q.IPromise<IEntryRow[]> {
+function getEntries(start: Date, end: Date): q.IPromise<IEntryRecord[]> {
     return query(`
         select * 
           from ENTRY
@@ -79,36 +80,16 @@ function getEntries(start: Date, end: Date): q.IPromise<IEntryRow[]> {
     `)      
 }
 
-interface ITimesheet {
-    dates: Date[]
-    projectRows: IProjectRow[]    
-}
-
-interface IProjectRow {
-    project: IProject
-    taskRows: ITaskRow[]
-}
-
-interface ITaskRow {
-    task: ITask
-    entryCells: IEntryCell[]
-}
-
-interface IEntryCell {
-    column: number
-    time: number
-}
-
-function getTimesheet(start: Date, days: number): q.IPromise<ITimesheet> {
+function getTimesheet<Timesheet extends api.ITimesheet>(start: Date, days: number): q.IPromise<Timesheet> {
     let dates = Array<Date>()
     for (let i = 0; i < days; ++i) {
         dates.push(moment.utc(start).add(i, "days").toDate())
     }
     let end = _.last(dates)
     return q.all<Object>([getProjects(), getProjectIdTasks(), getEntries(start, end)]).then(function(ps) {
-        let projects = <IProject[]> ps[0]
-        let projectIdTasks = <_.Dictionary<ITask[]>> ps[1]
-        let entryRows = <IEntryRow[]> ps[2] 
+        let projects = <IProjectRecord[]> ps[0]
+        let projectIdTasks = <_.Dictionary<ITaskRecord[]>> ps[1]
+        let entryRows = <IEntryRecord[]> ps[2] 
         return {
             dates: dates,
             projectRows: _.map(projects, function(project) {
@@ -142,10 +123,21 @@ server.use(restify.queryParser())
 server.use(restify.CORS())
 
 server.get("/timesheets/:start", function(req, res, next) {
-    let start = moment.utc(req.params.start).toDate()
-    let days = req.query.days ? parseInt(req.query.days) : 7    
-    getTimesheet(start, days).then(function(timesheet) {
-        res.send(timesheet)
+    let start = moment.utc(req.params.start)
+    let days = req.query.days ? parseInt(req.query.days) : 7
+    getTimesheet<api.ITimesheetResource>(start.toDate(), days).then(function(timesheetResource) {
+        timesheetResource._links = {
+            self: {
+                href: `/timesheets/${start.format("YYYY-MM-DD")}`
+            },
+            previous: {
+                href: `/timesheets/${moment.utc(start).subtract(days, "days").format("YYYY-MM-DD")}`
+            },
+            next: {
+                href: `/timesheets/${moment.utc(start).add(days, "days").format("YYYY-MM-DD")}`
+            }
+        }
+        res.send(timesheetResource)
     }, function(error) {
         res.send(500, error)
     })                   

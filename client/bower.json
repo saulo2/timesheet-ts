@@ -1,0 +1,12 @@
+{
+  "name": "timesheet-client",
+  "dependencies": {
+    "angularjs": "~1.4.4",
+    "angular-i18n": "~1.4.4",
+    "angular-loading-bar": "~0.8.0",
+    "angular-route": "~1.4.4",
+    "ngSticky": "~1.7.9",
+    "bootstrap": "~3.3.5",
+    "moment": "~2.10.6"        
+  }
+}
