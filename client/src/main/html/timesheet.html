@@ -1,33 +1,45 @@
-<table class="table table-bordered timesheet" sticky>
-	<thead>
-		<tr>
-			<th rowspan="2">Project</th>
-			<th rowspan="2">Task</th>
-			<th colspan="{{timesheet.dates.length}}">
-				<a href="#{{timesheet._links.previous.href}}" class="glyphicon glyphicon-circle-arrow-left"></a>
-				Dates
-				<a href="#{{timesheet._links.next.href}}" class="glyphicon glyphicon-circle-arrow-right"></a>
-				
-				<span class="pull-right">
-					<a href="#{{timesheet._links.minus.href}}" class="glyphicon glyphicon-minus-sign"></a>
-					<a href="#{{timesheet._links.plus.href}}" class="glyphicon glyphicon-plus-sign"></a>										
-				</span>					
-			</th>
-		</tr>
-		<tr>
-			<th ng-repeat="date in timesheet.dates">{{date | date: "shortDate" : "+00:00"}}</th>
-		</tr>		
-	</thead>
-</table>
-
-<table class="table table-bordered timesheet">
-	<tbody ng-repeat="projectRow in timesheet.projectRows">
-		<tr ng-repeat="taskRow in projectRow.taskRows">
-			<td rowspan="{{projectRow.taskRows.length}}" ng-show="$first">{{projectRow.project.name}}</td>
-			<td>{{taskRow.task.name}}</td>
-			<td ng-repeat="entryCell in taskRow.entryCells">
-				<input type="text" ng-model="entryCell.time" ui-number-mask="1" ng-keydown="saveEntryCell($event, projectRow, taskRow, entryCell)"/>
-			</td>
-		</tr>		
-	</tbody>
-</table>
+<div ng-controller="timesheetController">
+	<table class="table table-bordered timesheet" sticky>
+		<thead>
+			<tr>
+				<th rowspan="2">Project</th>
+				<th rowspan="2">Task</th>
+				<th colspan="{{timesheet.dates.length}}">
+					<a href="#{{timesheet._links.previous.href}}" class="glyphicon glyphicon-circle-arrow-left" ng-show="timesheet._links.previous"></a>
+					Dates
+					<a href="#{{timesheet._links.next.href}}" class="glyphicon glyphicon-circle-arrow-right" ng-show="timesheet._links.next"></a>
+					
+					<span class="pull-right">
+						<a href="#{{timesheet._links.minus.href}}" class="glyphicon glyphicon-minus-sign" ng-show="timesheet._links.minus"></a>
+						<a href="#{{timesheet._links.plus.href}}" class="glyphicon glyphicon-plus-sign"></a>										
+					</span>					
+				</th>
+			</tr>
+			<tr>
+				<th ng-repeat="date in timesheet.dates">{{date | date: "shortDate" : "+00:00"}}</th>
+			</tr>
+		</thead>
+	</table>
+	
+	<table class="table table-bordered timesheet">	
+		<tbody ng-repeat="projectRow in timesheet.projectRows">
+			<tr ng-repeat="taskRow in projectRow.taskRows">
+				<td rowspan="{{projectRow.taskRows.length}}" ng-show="$first">{{projectRow.project.name}}</td>
+				<td>{{taskRow.task.name}}</td>
+				<td ng-repeat="entryCell in taskRow.entryCells">
+					<input type="text" ng-model="entryCell.time" ui-number-mask="1" ng-keydown="saveEntryCell($event, projectRow, taskRow, entryCell)"/>
+				</td>
+			</tr>		
+		</tbody>
+	</table>
+	
+	<div class="panel panel-default timesheet-chart">
+		<div class="panel-heading">
+			<a href="#" class="fa fa-pie-chart" ng-click="toggleChartVisibility($event)"></a>
+			Time per project
+		</div>
+		<div class="panel-body" ng-if="visible">
+			<canvas class="chart chart-pie" data="data" labels="labels"></canvas> 
+		</div>
+	</div>
+</div>	

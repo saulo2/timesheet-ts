@@ -12,14 +12,14 @@ import restify = require("restify")
 
 let pool = anyDB.createPool("postgres://timesheet:timesheet@localhost:5432/timesheet", null)
 
-function query<Result>(text: string, params?: any[]): q.IPromise<Result> {
-    console.log(text, params)
+function query<Result>(text: string, params?: any[]): q.IPromise<Result[]> {    
     let d = q.defer()
     pool.query(text, params, function(error, result) {
         if (error) {
-            console.log(error)
+            console.log(text, params, error)
             d.reject(error)
         } else {
+            console.log(text, params, result.rows.length)
             d.resolve(result.rows)
         }
     })
@@ -48,7 +48,7 @@ interface IProjectIdTask extends ITaskRecord {
 }
 
 function getProjectIdTasks(): q.IPromise<_.Dictionary<ITaskRecord[]>> {
-    return query<IProjectIdTask[]>(`
+    return query<IProjectIdTask>(`
         select PROJECT_TASK.PROJECT_ID, TASK.* 
           from PROJECT_TASK join TASK on PROJECT_TASK.TASK_ID = TASK.ID
     `).then(function(projectIdTasks) {
@@ -82,16 +82,22 @@ function selectEntries(start: Date, end: Date): q.IPromise<IEntryRecord[]> {
 }
 
 function entryCount(entry: IEntryRecord): q.IPromise<number> {
-    return query(`
+    return query<ICount>(`
         select count(*)
           from ENTRY
          where PROJECT_ID = ${entry.project_id} and
                TASK_ID = ${entry.task_id} and
                DATE = '${moment.utc(entry.date).format("YYYY-MM-DD")}'
-    `)
+    `).then(function(result) {
+        return result[0].count
+    })
 }
 
-function insertEntry(entry: IEntryRecord): q.IPromise<void> {
+interface ICount {
+    count: number
+}
+
+function insertEntry(entry: IEntryRecord): q.IPromise<void[]> {
     return query<void>(`
         insert into ENTRY (PROJECT_ID, TASK_ID, DATE, TIME) values (
             ${entry.project_id},
@@ -102,7 +108,7 @@ function insertEntry(entry: IEntryRecord): q.IPromise<void> {
     `)    
 }
 
-function updateEntry(entry: IEntryRecord): q.IPromise<void> {
+function updateEntry(entry: IEntryRecord): q.IPromise<void[]> {
     return query<void>(`
         update ENTRY
            set TIME = ${parseFloat(entry.time)}
@@ -112,9 +118,9 @@ function updateEntry(entry: IEntryRecord): q.IPromise<void> {
     `)
 }
 
-function saveEntry(entry: IEntryRecord): q.IPromise<void> {
+function saveEntry(entry: IEntryRecord): q.IPromise<void[]> {
     return entryCount(entry).then(function(entryCount) {
-        return entryCount ? insertEntry(entry) : updateEntry(entry)
+        return entryCount == 0 ? insertEntry(entry) : updateEntry(entry) 
     })
 }
 
@@ -137,15 +143,15 @@ function getTimesheet<Timesheet extends api.ITimesheet>(start: Date, days: numbe
                         return {
                             task: task,
                             entryCells: _.map(dates, function(date, index) {
-                                let formattedDate = moment(date).format("YYYY-MM-DD")
-                                let entryRow = _.find(entries, function(entry) {
+                                let formattedDate = moment.utc(date).format("YYYY-MM-DD")
+                                let entry = _.find(entries, function(entry) {
                                     return entry.project_id === project.id
                                         && entry.task_id === task.id
-                                        && moment(entry.date).format("YYYY-MM-DD") === formattedDate
+                                        && moment.utc(entry.date).format("YYYY-MM-DD") === formattedDate
                                 })
                                 return {
                                     column: index,
-                                    time: entryRow ? parseFloat(entryRow.time) : null
+                                    time: entry ? parseFloat(entry.time) : null
                                 }
                             })
                         }
@@ -157,7 +163,7 @@ function getTimesheet<Timesheet extends api.ITimesheet>(start: Date, days: numbe
 }
 
 function patchTimesheet(start: Date, timesheet: api.ITimesheet): q.IPromise<void> {
-    let ps: q.IPromise<void>[] = []
+    let ps: q.IPromise<void[]>[] = []
     _.forEach(timesheet.projectRows, function(projectRow) {
         _.forEach(projectRow.taskRows, function(taskRow) {
             _.forEach(taskRow.entryCells, function(entryCell) {
@@ -182,30 +188,34 @@ server.use(restify.queryParser())
 server.get("/timesheets/:start", function(req, res, next) {
     let start = moment.utc(req.params.start)
     let days = req.query.days ? parseInt(req.query.days) : 7
-    getTimesheet<api.ITimesheetResource>(start.toDate(), days).then(function(timesheetResource) {
-        timesheetResource._links = {
-            self: {
-                href: `/timesheets/${start.format("YYYY-MM-DD")}?days=${days}`
-            },
-            previous: {
-                href: `/timesheets/${moment.utc(start).subtract(days, "days").format("YYYY-MM-DD")}?days=${days}`
-            },
-            next: {
-                href: `/timesheets/${moment.utc(start).add(days, "days").format("YYYY-MM-DD")}?days=${days}`
-            },
-            plus: {
-                href: `/timesheets/${start.format("YYYY-MM-DD")}?days=${days + 1}`
-            },
-        }
-        if (days > 0) {
-            timesheetResource._links["minus"] = {
-                href: `/timesheets/${start.format("YYYY-MM-DD")}?days=${days - 1}`
+    if (days < 1) {
+        res.send(400)
+    } else {
+        getTimesheet<api.ITimesheetResource>(start.toDate(), days).then(function(timesheetResource) {
+            timesheetResource._links = {
+                self: {
+                    href: `/timesheets/${start.format("YYYY-MM-DD")}?days=${days}`
+                },
+                previous: {
+                    href: `/timesheets/${moment.utc(start).subtract(days, "days").format("YYYY-MM-DD")}?days=${days}`
+                },
+                next: {
+                    href: `/timesheets/${moment.utc(start).add(days, "days").format("YYYY-MM-DD")}?days=${days}`
+                },
+                plus: {
+                    href: `/timesheets/${start.format("YYYY-MM-DD")}?days=${days + 1}`
+                },
             }
-        }
-        res.send(timesheetResource)
-    }, function(error) {
-        res.send(500, error)
-    })
+            if (days > 1) {
+                timesheetResource._links["minus"] = {
+                    href: `/timesheets/${start.format("YYYY-MM-DD")}?days=${days - 1}`
+                }
+            }
+            res.send(timesheetResource)
+        }, function(error) {
+            res.send(500, error)
+        })        
+    }
     return next()
 })
 

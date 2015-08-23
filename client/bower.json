@@ -2,12 +2,15 @@
   "name": "timesheet-client",
   "dependencies": {
     "angularjs": "~1.4.4",
+    "angular-chart.js": "~0.7.6",
     "angular-i18n": "~1.4.4",
     "angular-input-masks": "~2.1.0",
     "angular-loading-bar": "~0.8.0",
     "angular-route": "~1.4.4",
     "bootstrap": "~3.3.5",
     "moment": "~2.10.6",
-    "ngSticky": "~1.7.9"    
+    "ngSticky": "~1.7.9",
+    "lodash": "~3.10.1",
+    "font-awesome": "~4.4.0"
   }
 }

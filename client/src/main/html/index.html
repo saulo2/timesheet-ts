@@ -11,13 +11,22 @@
 
 		<script src="../../../bower_components/angularjs/angular.min.js"></script>
 		
+		<link rel="stylesheet" href="../../../bower_components/angular-chart.js/dist/angular-chart.css"/>
+		<script src="../../../bower_components/Chart.js/Chart.min.js"></script>
+		<script src="../../../bower_components/angular-chart.js/dist/angular-chart.min.js"></script>
+
+		<script src="../../../bower_components/angular-input-masks/angular-input-masks-standalone.min.js"></script>		
+
 		<link rel="stylesheet" href="../../../bower_components/angular-loading-bar/build/loading-bar.min.css"/>
 		<script src="../../../bower_components/angular-loading-bar/build/loading-bar.min.js"></script>
+
+		<script src="../../../bower_components/angular-i18n/angular-locale_pt-br.js"></script>
+		<script src="../../../bower_components/angular-route/angular-route.min.js"></script>		
+		<script src="../../../bower_components/ngSticky/dist/sticky.min.js"></script>
 		
-		<script src="../../../bower_components/angular-i18n/angular-locale_pt-br.js"></script>		
-		<script src="../../../bower_components/angular-route/angular-route.min.js"></script>
-		<script src="../../../bower_components/angular-input-masks/angular-input-masks-standalone.min.js"></script>
-		<script src="../../../bower_components/ngSticky/dist/sticky.min.js"></script>		
+		<link rel="stylesheet" href="../../../bower_components/font-awesome/css/font-awesome.min.css"/>
+		
+		<script src="../../../bower_components/lodash/lodash.min.js"></script>
 
 		<script src="../../../bower_components/moment/min/moment.min.js"></script>
 		
@@ -25,7 +34,7 @@
 		
 		<style>
 			body {
-				padding-top: 60px;	
+				padding-top: 20px;	
 			}
 			
 			table.timesheet > thead > tr > th,
@@ -51,11 +60,23 @@
 				
 				width: 100%;				
 			}
+			
+			div.timesheet-chart {
+				bottom: 0px;
+				
+				margin-bottom: 0px;
+				
+				position: fixed;				
+
+				right: 0px;
+			}
 		</style>
 	</head>
 	<body>
-		<div class="container">
-			<ng-view></ng-view>	
+		<div class="container" ng-controller="routeController" ng-include="$route.current.loadedTemplateUrl">
+			<!--
+			<ng-view></ng-view>
+			-->
 		</div>
 	</body>
 </html>
