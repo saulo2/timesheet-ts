@@ -7,10 +7,11 @@
 		<script src="../../../bower_components/jquery/dist/jquery.min.js"></script>
 		
 		<link rel="stylesheet" href="../../../bower_components/bootstrap/dist/css/bootstrap.min.css"/>
+		<link rel="stylesheet" href="../../../bower_components/bootstrap/dist/css/bootstrap-theme.min.css"/>
 		<script src="../../../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 
 		<script src="../../../bower_components/angularjs/angular.min.js"></script>
-		
+
 		<link rel="stylesheet" href="../../../bower_components/angular-chart.js/dist/angular-chart.css"/>
 		<script src="../../../bower_components/Chart.js/Chart.min.js"></script>
 		<script src="../../../bower_components/angular-chart.js/dist/angular-chart.min.js"></script>
@@ -22,6 +23,7 @@
 
 		<script src="../../../bower_components/angular-i18n/angular-locale_pt-br.js"></script>
 		<script src="../../../bower_components/angular-route/angular-route.min.js"></script>		
+		<script src="../../../bower_components/angular-search-box/target/js/angular-search-box.min.js"></script>		
 		<script src="../../../bower_components/ngSticky/dist/sticky.min.js"></script>
 		
 		<link rel="stylesheet" href="../../../bower_components/font-awesome/css/font-awesome.min.css"/>
@@ -34,7 +36,11 @@
 		
 		<style>
 			body {
-				padding-top: 20px;	
+				padding-top: 20px;
+			}
+			
+			a:hover, a:focus {
+				text-decoration: none;
 			}
 			
 			table.timesheet > thead > tr > th,
@@ -46,21 +52,24 @@
 				vertical-align: middle;
 			}
 			
-			table.timesheet > thead > tr:nth-child(1) > th:nth-child(1),
-			table.timesheet > thead > tr:nth-child(1) > th:nth-child(2),
+			table.timesheet > thead > tr:nth-child(2) > th:nth-child(1),
+			table.timesheet > thead > tr:nth-child(2) > th:nth-child(2),
 			table.timesheet > tbody > tr:nth-child(1) > td:nth-child(1), 
 			table.timesheet > tbody > tr:nth-child(1) > td:nth-child(2) {
 				width: 15%;
 			}
 			
+			table.timesheet > thead > tr > th input[type="text"],
 			table.timesheet > tbody > tr > td > input[type="text"] {
 				border: none;
+				
+				padding: 0px;
 				
 				text-align: center;				
 				
 				width: 100%;				
-			}
-			
+			}						
+
 			div.timesheet-chart {
 				bottom: 0px;
 				
