@@ -33,20 +33,20 @@
 		
 	<table class="table table-bordered timesheet">			
 		<tbody ng-repeat="projectRow in timesheet.projectRows | filter: filterProjectRow">
-			<tr ng-repeat="taskRow in projectRow.taskRows | filter: filterTaskRow">
+			<tr ng-repeat="taskRow in projectRow.taskRows | filter: filterTaskRow(projectRow)">
 				<td rowspan="{{projectRow.taskRows.length}}" ng-show="$first">										
 					{{projectRow.project.name}}
 					<a href="#"
 					   class="glyphicon glyphicon-pushpin pull-right" 
-					   style="color: {{projectRow.hidden ? '#777' : '#337ab7'}}; visibility: {{settingUp ? 'visible' : 'hidden'}};"
-					   ng-click="$event.preventDefault(); projectRow.hidden = !projectRow.hidden"></a>
+					   style="color: {{getProjectRowState(projectRow).visible ? '#337ab7' : '#777'}}; visibility: {{settingUp ? 'visible' : 'hidden'}};"
+					   ng-click="toggleProjectRowVisibility($event, projectRow)"></a>
 				</td>
 				<td>					
 					{{taskRow.task.name}}
 					<a href="#"
 					   class="glyphicon glyphicon-pushpin pull-right" 
-					   style="color: {{taskRow.hidden ? '#777' : '#337ab7'}}; visibility: {{settingUp ? 'visible' : 'hidden'}};"
-					   ng-click="$event.preventDefault(); taskRow.hidden = !taskRow.hidden"></a>					
+					   style="color: {{getTaskRowState(projectRow, taskRow).visible ? '#337ab7' : '#777'}}; visibility: {{settingUp ? 'visible' : 'hidden'}};"
+					   ng-click="toggleTaskRowVisibility($event, projectRow, taskRow)"></a>					
 				</td>
 				<td ng-repeat="entryCell in taskRow.entryCells">
 					<input type="text" ng-model="entryCell.time" ui-number-mask="1" ng-keydown="saveEntryCell($event, projectRow, taskRow, entryCell)"/>

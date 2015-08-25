@@ -22,6 +22,9 @@
     },
     "lodash/lodash.d.ts": {
       "commit": "8f081073e6cb416f901b272810d8b04d6e01c9e0"
+    },
+    "angular-local-storage/angular-local-storage.d.ts": {
+      "commit": "a1226afe5c4ab96610e088d970eb4f8537b1d116"
     }
   }
 }

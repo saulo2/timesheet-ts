@@ -1,4 +1,5 @@
 /// <reference path="../../../typings/angularjs/angular.d.ts"/>
+/// <reference path="../../../typings/angular-local-storage/angular-local-storage.d.ts"/>
 /// <reference path="../../../typings/angularjs/angular-route.d.ts"/>
 /// <reference path="../../../typings/lodash/lodash.d.ts"/>
 /// <reference path="../../../typings/moment/moment.d.ts"/>
@@ -6,7 +7,7 @@
 
 const MODULE_NAME = "timesheetModule" 
 
-angular.module(MODULE_NAME, ["angular-search-box", "angular-loading-bar", "chart.js", "ngRoute", "sticky", "ui.utils.masks"])
+angular.module(MODULE_NAME, ["angular-search-box", "angular-loading-bar", "chart.js", "LocalStorageModule", "ngRoute", "sticky", "ui.utils.masks"])
 
 angular.module(MODULE_NAME).config(["$routeProvider", function($routeProvider: angular.route.IRouteProvider) {
 	$routeProvider.when("/timesheets/:start", {
@@ -28,10 +29,16 @@ interface ITimesheetScope extends angular.IScope {
 	timesheet: api.ITimesheetResource
 	initialize(): void
 	saveEntryCell($event: IAngularEvent, projectRow: api.IProjectRow, taskRow: api.ITaskRow, entryCell: api.IEntryCell): void
-	
+
 	settingUp: boolean
 	toggleSetup($event: angular.IAngularEvent): void
 	
+	getProjectRowState(projectRow: api.IProjectRow): IRowState
+	toggleProjectRowVisibility($event: IAngularEvent, projectRow: api.IProjectRow): void		
+	
+	getTaskRowState(projectRow: api.IProjectRow, taskRow: api.ITaskRow): IRowState
+	toggleTaskRowVisibility($event: IAngularEvent, projectRow: api.IProjectRow, taskRow: api.ITaskRow): void
+
 	labels: string[]
 	data: number[]
 	visible: boolean
@@ -44,14 +51,18 @@ interface ITimesheetScope extends angular.IScope {
 
 	taskNameSubstring: string
 	filteringTaskRow: boolean
-	filterTaskRow(taskRow: api.ITaskRow): boolean	
+	filterTaskRow(projectRow: api.IProjectRow): (taskRow: api.ITaskRow) => boolean	
 }
 
 interface IAngularEvent extends angular.IAngularEvent {
 	originalEvent: KeyboardEvent
 }
 
-angular.module(MODULE_NAME).controller("timesheetController", ["$http", "$route", "$scope", function($http: angular.IHttpService, $route: angular.route.IRouteService, $scope: ITimesheetScope) {
+interface IRowState {
+	visible: boolean
+}
+
+angular.module(MODULE_NAME).controller("timesheetController", ["$http", "localStorageService", "$route", "$scope", function($http: angular.IHttpService, localStorageService: angular.local.storage.ILocalStorageService, $route: angular.route.IRouteService, $scope: ITimesheetScope) {	
 	$scope.initialize = function() {
 		$http<api.ITimesheetResource>({
 			method: "GET",
@@ -62,7 +73,7 @@ angular.module(MODULE_NAME).controller("timesheetController", ["$http", "$route"
 			$scope.updateChart()
 		})
 	}
-		
+
 	$scope.saveEntryCell = function($event, projectRow, taskRow, entryCell) {
 		const ENTER_KEY_CODE = 13
 		if ($event.originalEvent.keyCode == ENTER_KEY_CODE) {
@@ -95,11 +106,59 @@ angular.module(MODULE_NAME).controller("timesheetController", ["$http", "$route"
 		
 	$scope.toggleSetup = function($event) {
 		$event.preventDefault()
+		
 		$scope.settingUp = !$scope.settingUp
-	}	
+	}
+	
+	function getRowState(key: string): IRowState {
+		var state = <IRowState> localStorageService.get(key)
+		if (!state) {
+			state = {
+				visible: true
+			}
+			localStorageService.set(key, state)
+		}
+		return state
+	}
+
+	function setRowState(key: string, state: IRowState): void {
+		localStorageService.set(key, state)
+	}
+	
+	function toggleRowVisibility($event: angular.IAngularEvent, key: string): void {
+		$event.preventDefault()
+		
+		var state = getRowState(key)
+		state.visible = !state.visible
+		setRowState(key, state)
+	}
+	
+	function getProjectRowKey(projectRow: api.IProjectRow): string {
+		return JSON.stringify(projectRow.project.id)
+	}
+
+	$scope.getProjectRowState = function(projectRow) {
+		return getRowState(getProjectRowKey(projectRow))
+	}
+	
+	$scope.toggleProjectRowVisibility = function($event, projectRow) {
+		toggleRowVisibility($event, getProjectRowKey(projectRow))
+	}
+
+	function getTaskRowKey(projectRow: api.IProjectRow, taskRow: api.ITaskRow): string {
+		return JSON.stringify([projectRow.project.id, taskRow.task.id])
+	}
+
+	$scope.getTaskRowState = function(projectRow, taskRow) {
+		return getRowState(getTaskRowKey(projectRow, taskRow))
+	}
+	
+	$scope.toggleTaskRowVisibility = function($event, projectRow, taskRow) {
+		toggleRowVisibility($event, getTaskRowKey(projectRow, taskRow))
+	}
 
     $scope.filterProjectRow = function(projectRow) { 
-		if ($scope.settingUp || !projectRow.hidden) {
+		if ($scope.settingUp || $scope.getProjectRowState(projectRow).visible) {
 	        if ($scope.filteringProjectRow && $scope.projectNameSubstring) {
     	        return projectRow.project.name.toLowerCase().indexOf($scope.projectNameSubstring.toLowerCase()) >= 0
 			} else {
@@ -110,16 +169,18 @@ angular.module(MODULE_NAME).controller("timesheetController", ["$http", "$route"
 		}
     }
 
-    $scope.filterTaskRow = function(taskRow) {
-		if ($scope.settingUp || !taskRow.hidden) {
-        	if ($scope.filteringTaskRow && $scope.taskNameSubstring) {
-				return taskRow.task.name.toLowerCase().indexOf($scope.taskNameSubstring.toLowerCase()) >= 0
+    $scope.filterTaskRow = function(projectRow: api.IProjectRow) {
+		return function(taskRow: api.ITaskRow): boolean {
+			if ($scope.settingUp || $scope.getTaskRowState(projectRow, taskRow).visible) {
+	        	if ($scope.filteringTaskRow && $scope.taskNameSubstring) {
+					return taskRow.task.name.toLowerCase().indexOf($scope.taskNameSubstring.toLowerCase()) >= 0
+				} else {
+					return true
+				}
 			} else {
-				return true
-			}
-		} else {
-			return false
-		}		
+				return false
+			}		
+		}
     }
 	
 	$scope.updateChart = function() {
@@ -141,6 +202,7 @@ angular.module(MODULE_NAME).controller("timesheetController", ["$http", "$route"
 	
 	$scope.toggleChartVisibility = function($event) {
 		$event.preventDefault()
+		
 		$scope.visible = !$scope.visible 		
 	}	
 

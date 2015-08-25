@@ -12,6 +12,7 @@
     "moment": "~2.10.6",
     "ngSticky": "~1.7.9",
     "lodash": "~3.10.1",
-    "angular-search-box": "~1.0.0"
+    "angular-search-box": "~1.0.0",
+    "angular-local-storage": "~0.2.2"
   }
 }
