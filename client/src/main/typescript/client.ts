@@ -39,10 +39,10 @@ interface ITimesheetScope extends angular.IScope {
 	getTaskRowState(projectRow: api.IProjectRow, taskRow: api.ITaskRow): IRowState
 	toggleTaskRowVisibility($event: IAngularEvent, projectRow: api.IProjectRow, taskRow: api.ITaskRow): void
 
-	labels: string[]
-	data: number[]
-	visible: boolean
-	updateChart(): void
+	chartLabels: string[]
+	chartData: number[]
+	chartVisible: boolean
+	updateChart(): void	
 	toggleChartVisibility($event: angular.IAngularEvent): void	
 	
 	projectNameSubstring: string
@@ -184,11 +184,11 @@ angular.module(MODULE_NAME).controller("timesheetController", ["$http", "localSt
     }
 	
 	$scope.updateChart = function() {
-		$scope.labels = _.map($scope.timesheet.projectRows, function(projectRow) {
+		$scope.chartLabels = _.map($scope.timesheet.projectRows, function(projectRow) {
 			return projectRow.project.name
 		})
 
-		$scope.data = []
+		$scope.chartData = []
 		_.forEach($scope.timesheet.projectRows, function(projectRow) {
 			var time = 0
 			_.forEach(projectRow.taskRows, function(taskRow) {
@@ -196,14 +196,14 @@ angular.module(MODULE_NAME).controller("timesheetController", ["$http", "localSt
 					time += entryCell.time					
 				})
 			})
-			$scope.data.push(time)
+			$scope.chartData.push(time)
 		})
 	}
 	
 	$scope.toggleChartVisibility = function($event) {
 		$event.preventDefault()
 		
-		$scope.visible = !$scope.visible 		
+		$scope.chartVisible = !$scope.chartVisible 		
 	}	
 
 	$scope.$on("$routeChangeSuccess", function(angularEvent, current, previous) {

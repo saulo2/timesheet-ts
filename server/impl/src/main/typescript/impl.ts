@@ -183,6 +183,7 @@ function patchTimesheet(start: Date, timesheet: api.ITimesheet): q.IPromise<void
 let server = restify.createServer()
 server.use(restify.bodyParser())
 server.use(restify.CORS())
+server.use(restify.gzipResponse())
 server.use(restify.queryParser())
 
 server.get("/timesheets/:start", function(req, res, next) {

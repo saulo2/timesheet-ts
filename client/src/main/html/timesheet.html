@@ -60,8 +60,8 @@
 			<a href="#" class="fa fa-pie-chart" ng-click="toggleChartVisibility($event)"></a>
 			Time per project
 		</div>
-		<div class="panel-body" ng-if="visible">
-			<canvas class="chart chart-pie" data="data" labels="labels"></canvas> 
+		<div class="panel-body" ng-if="chartVisible">
+			<canvas class="chart chart-pie" data="chartData" labels="chartLabels"></canvas> 
 		</div>
 	</div>
 </div>
