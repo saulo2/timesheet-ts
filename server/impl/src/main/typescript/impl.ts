@@ -200,8 +200,8 @@ server.get("/users/:userId/timesheets/:start", function(req, res, next) {
     let userId = parseInt(req.params.userId)
     let start = moment.utc(req.params.start)
     let days = req.query.days ? parseInt(req.query.days) : 7
-    if (days < 1) {
-        res.send(400)
+    if (isNaN(days) || days < 1) {
+        res.send(new restify.BadRequestError())
     } else {
         getTimesheet<api.ITimesheetResource>(userId, start.toDate(), days).then(function(timesheetResource) {
             timesheetResource._links = {
@@ -225,7 +225,7 @@ server.get("/users/:userId/timesheets/:start", function(req, res, next) {
             }
             res.send(timesheetResource)
         }, function(error) {
-            res.send(500, error)
+            res.send(new restify.InternalServerError(), error)
         })        
     }
     return next()
@@ -237,7 +237,7 @@ server.patch("/users/:userId/timesheets/:start", function(req, res, next) {
     patchTimesheet(userId, start.toDate(), req.body).then(function() {
         res.send()
     }, function(error) {
-        res.send(500, error)
+        res.send(new restify.InternalServerError(), error)
     })
     return next()
 })
