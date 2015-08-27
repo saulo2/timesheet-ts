@@ -79,13 +79,9 @@ angular.module(MODULE_NAME).controller("timesheetController", ["$http", "localSt
 		if ($event.originalEvent.keyCode == ENTER_KEY_CODE) {
 			let timesheet = {
 				projectRows: [{
-					project: {
-						id: projectRow.project.id
-					},
+					id: projectRow.id,
 					taskRows: [{
-						task: {
-							id: taskRow.task.id
-						},
+						id: taskRow.id,
 						entryCells: [entryCell]
 					}]
 				}]
@@ -134,7 +130,7 @@ angular.module(MODULE_NAME).controller("timesheetController", ["$http", "localSt
 	}
 	
 	function getProjectRowKey(projectRow: api.IProjectRow): string {
-		return JSON.stringify(projectRow.project.id)
+		return JSON.stringify(projectRow.id)
 	}
 
 	$scope.getProjectRowState = function(projectRow) {
@@ -146,7 +142,7 @@ angular.module(MODULE_NAME).controller("timesheetController", ["$http", "localSt
 	}
 
 	function getTaskRowKey(projectRow: api.IProjectRow, taskRow: api.ITaskRow): string {
-		return JSON.stringify([projectRow.project.id, taskRow.task.id])
+		return JSON.stringify([projectRow.id, taskRow.id])
 	}
 
 	$scope.getTaskRowState = function(projectRow, taskRow) {
@@ -160,7 +156,7 @@ angular.module(MODULE_NAME).controller("timesheetController", ["$http", "localSt
     $scope.filterProjectRow = function(projectRow) { 
 		if ($scope.settingUp || $scope.getProjectRowState(projectRow).visible) {
 	        if ($scope.filteringProjectRow && $scope.projectNameSubstring) {
-    	        return projectRow.project.name.toLowerCase().indexOf($scope.projectNameSubstring.toLowerCase()) >= 0
+    	        return projectRow.projectName.toLowerCase().indexOf($scope.projectNameSubstring.toLowerCase()) >= 0
 			} else {
 				return true
 			}	
@@ -173,7 +169,7 @@ angular.module(MODULE_NAME).controller("timesheetController", ["$http", "localSt
 		return function(taskRow: api.ITaskRow): boolean {
 			if ($scope.settingUp || $scope.getTaskRowState(projectRow, taskRow).visible) {
 	        	if ($scope.filteringTaskRow && $scope.taskNameSubstring) {
-					return taskRow.task.name.toLowerCase().indexOf($scope.taskNameSubstring.toLowerCase()) >= 0
+					return taskRow.taskName.toLowerCase().indexOf($scope.taskNameSubstring.toLowerCase()) >= 0
 				} else {
 					return true
 				}
@@ -185,7 +181,7 @@ angular.module(MODULE_NAME).controller("timesheetController", ["$http", "localSt
 	
 	$scope.updateChart = function() {
 		$scope.chartLabels = _.map($scope.timesheet.projectRows, function(projectRow) {
-			return projectRow.project.name
+			return projectRow.projectName
 		})
 
 		$scope.chartData = []

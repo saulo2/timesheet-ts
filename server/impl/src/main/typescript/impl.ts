@@ -142,16 +142,12 @@ function getTimesheet<Timesheet extends api.ITimesheet>(userId: number, start: D
             dates: dates,
             projectRows: _.map(projects, function(project) {
                 return {
-                    project: {
-                        id: project.id,
-                        name: project.name
-                    },
+                    id: project.id,
+                    projectName: project.name,
                     taskRows: _.map(projectIdTasks[project.id], function(task) {
                         return {
-                            task: {
-                                id: task.id,
-                                name: task.name
-                            },
+                            id: task.id,
+                            taskName: task.name,
                             entryCells: _.map(dates, function(date, index) {
                                 let formattedDate = moment.utc(date).format("YYYY-MM-DD")
                                 let entry = _.find(entries, function(entry) {
@@ -160,7 +156,7 @@ function getTimesheet<Timesheet extends api.ITimesheet>(userId: number, start: D
                                         && moment.utc(entry.date).format("YYYY-MM-DD") === formattedDate
                                 })
                                 return {
-                                    column: index,
+                                    id: index,
                                     time: entry ? parseFloat(entry.time) : null
                                 }
                             })
@@ -178,9 +174,9 @@ function patchTimesheet(userId: number, start: Date, timesheet: api.ITimesheet):
         _.forEach(projectRow.taskRows, function(taskRow) {
             _.forEach(taskRow.entryCells, function(entryCell) {
                 ps.push(saveEntry({
-                    project_id: projectRow.project.id,
-                    task_id: taskRow.task.id,
-                    date: moment.utc(start).add(entryCell.column, "days").toDate(),
+                    project_id: projectRow.id,
+                    task_id: taskRow.id,
+                    date: moment.utc(start).add(entryCell.id, "days").toDate(),
                     time: `${entryCell.time}`
                 }))
             })

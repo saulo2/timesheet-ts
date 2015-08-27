@@ -35,14 +35,14 @@
 		<tbody ng-repeat="projectRow in timesheet.projectRows | filter: filterProjectRow">
 			<tr ng-repeat="taskRow in projectRow.taskRows | filter: filterTaskRow(projectRow)">
 				<td rowspan="{{projectRow.taskRows.length}}" ng-show="$first">										
-					{{projectRow.project.name}}
+					{{projectRow.projectName}}
 					<a href="#"
 					   class="glyphicon glyphicon-pushpin pull-right" 
 					   style="color: {{getProjectRowState(projectRow).visible ? '#337ab7' : '#777'}}; visibility: {{settingUp ? 'visible' : 'hidden'}};"
 					   ng-click="toggleProjectRowVisibility($event, projectRow)"></a>
 				</td>
 				<td>					
-					{{taskRow.task.name}}
+					{{taskRow.taskName}}
 					<a href="#"
 					   class="glyphicon glyphicon-pushpin pull-right" 
 					   style="color: {{getTaskRowState(projectRow, taskRow).visible ? '#337ab7' : '#777'}}; visibility: {{settingUp ? 'visible' : 'hidden'}};"

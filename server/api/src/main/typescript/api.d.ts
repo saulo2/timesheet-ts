@@ -5,27 +5,19 @@ declare module api {
     }
     
     interface IProjectRow {
-        project: IProjectDto
+        id: number
+        projectName: string
         taskRows: ITaskRow[]
     }
-    
-    interface IProjectDto {
-        id: number
-        name: string
-    }
-        
+            
     interface ITaskRow {
-        task: ITaskDto
+        id: number
+        taskName: string
         entryCells: IEntryCell[]
     }
     
-    interface ITaskDto {
+    interface IEntryCell {
         id: number
-        name: string
-    }
-    
-    export interface IEntryCell {
-        column: number
         time: number
     }
     
