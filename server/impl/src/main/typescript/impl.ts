@@ -29,28 +29,32 @@ function query<Result>(text: string, params?: any[]): q.IPromise<Result[]> {
 interface IProjectRecord {
     id: number
     name: string
+    user_id: number
 }
 
-function getProjects(): q.IPromise<IProjectRecord[]> {
+function getProjects(userId: number): q.IPromise<IProjectRecord[]> {
     return query(`
         select * 
           from PROJECT
+         where USER_ID = ${userId}
     `)
 }
 
 interface ITaskRecord {
     id: number
     name: string
+    user_id: number
 }
 
 interface IProjectIdTask extends ITaskRecord {
     project_id: number
 }
 
-function getProjectIdTasks(): q.IPromise<_.Dictionary<ITaskRecord[]>> {
+function getProjectIdTasks(userId: number): q.IPromise<_.Dictionary<ITaskRecord[]>> {
     return query<IProjectIdTask>(`
         select PROJECT_TASK.PROJECT_ID, TASK.* 
           from PROJECT_TASK join TASK on PROJECT_TASK.TASK_ID = TASK.ID
+         where TASK.USER_ID = ${userId}
     `).then(function(projectIdTasks) {
         return _.mapValues(_.groupBy(projectIdTasks, function(projectIdTask) {
             return projectIdTask.project_id
@@ -124,13 +128,13 @@ function saveEntry(entry: IEntryRecord): q.IPromise<void[]> {
     })
 }
 
-function getTimesheet<Timesheet extends api.ITimesheet>(start: Date, days: number): q.IPromise<Timesheet> {
+function getTimesheet<Timesheet extends api.ITimesheet>(userId: number, start: Date, days: number): q.IPromise<Timesheet> {
     let dates = Array<Date>()
     for (let i = 0; i < days; ++i) {
         dates.push(moment.utc(start).add(i, "days").toDate())
     }
     let end = _.last(dates)
-    return q.all<Object>([getProjects(), getProjectIdTasks(), selectEntries(start, end)]).then(function(ps) {
+    return q.all<Object>([getProjects(userId), getProjectIdTasks(userId), selectEntries(start, end)]).then(function(ps) {
         let projects = <IProjectRecord[]> ps[0]
         let projectIdTasks = <_.Dictionary<ITaskRecord[]>> ps[1]
         let entries = <IEntryRecord[]> ps[2] 
@@ -138,10 +142,16 @@ function getTimesheet<Timesheet extends api.ITimesheet>(start: Date, days: numbe
             dates: dates,
             projectRows: _.map(projects, function(project) {
                 return {
-                    project: project,
+                    project: {
+                        id: project.id,
+                        name: project.name
+                    },
                     taskRows: _.map(projectIdTasks[project.id], function(task) {
                         return {
-                            task: task,
+                            task: {
+                                id: task.id,
+                                name: task.name
+                            },
                             entryCells: _.map(dates, function(date, index) {
                                 let formattedDate = moment.utc(date).format("YYYY-MM-DD")
                                 let entry = _.find(entries, function(entry) {
@@ -155,14 +165,14 @@ function getTimesheet<Timesheet extends api.ITimesheet>(start: Date, days: numbe
                                 }
                             })
                         }
-                    })
+                    })                                        
                 }
             })
         }
     })
 }
 
-function patchTimesheet(start: Date, timesheet: api.ITimesheet): q.IPromise<void> {
+function patchTimesheet(userId: number, start: Date, timesheet: api.ITimesheet): q.IPromise<void> {
     let ps: q.IPromise<void[]>[] = []
     _.forEach(timesheet.projectRows, function(projectRow) {
         _.forEach(projectRow.taskRows, function(taskRow) {
@@ -186,30 +196,31 @@ server.use(restify.CORS())
 server.use(restify.gzipResponse())
 server.use(restify.queryParser())
 
-server.get("/timesheets/:start", function(req, res, next) {
+server.get("/users/:userId/timesheets/:start", function(req, res, next) {
+    let userId = parseInt(req.params.userId)
     let start = moment.utc(req.params.start)
     let days = req.query.days ? parseInt(req.query.days) : 7
     if (days < 1) {
         res.send(400)
     } else {
-        getTimesheet<api.ITimesheetResource>(start.toDate(), days).then(function(timesheetResource) {
+        getTimesheet<api.ITimesheetResource>(userId, start.toDate(), days).then(function(timesheetResource) {
             timesheetResource._links = {
                 self: {
-                    href: `/timesheets/${start.format("YYYY-MM-DD")}?days=${days}`
+                    href: `/users/${userId}/timesheets/${start.format("YYYY-MM-DD")}?days=${days}`
                 },
                 previous: {
-                    href: `/timesheets/${moment.utc(start).subtract(days, "days").format("YYYY-MM-DD")}?days=${days}`
+                    href: `/users/${userId}/timesheets/${moment.utc(start).subtract(days, "days").format("YYYY-MM-DD")}?days=${days}`
                 },
                 next: {
-                    href: `/timesheets/${moment.utc(start).add(days, "days").format("YYYY-MM-DD")}?days=${days}`
+                    href: `/users/${userId}/timesheets/${moment.utc(start).add(days, "days").format("YYYY-MM-DD")}?days=${days}`
                 },
                 plus: {
-                    href: `/timesheets/${start.format("YYYY-MM-DD")}?days=${days + 1}`
+                    href: `/users/${userId}/timesheets/${start.format("YYYY-MM-DD")}?days=${days + 1}`
                 },
             }
             if (days > 1) {
                 timesheetResource._links["minus"] = {
-                    href: `/timesheets/${start.format("YYYY-MM-DD")}?days=${days - 1}`
+                    href: `/users/${userId}/timesheets/${start.format("YYYY-MM-DD")}?days=${days - 1}`
                 }
             }
             res.send(timesheetResource)
@@ -220,9 +231,10 @@ server.get("/timesheets/:start", function(req, res, next) {
     return next()
 })
 
-server.patch("/timesheets/:start", function(req, res, next) {
+server.patch("/users/:userId/timesheets/:start", function(req, res, next) {
+    let userId = parseInt(req.params.userId)
     let start = moment.utc(req.params.start)
-    patchTimesheet(start.toDate(), req.body).then(function() {
+    patchTimesheet(userId, start.toDate(), req.body).then(function() {
         res.send()
     }, function(error) {
         res.send(500, error)

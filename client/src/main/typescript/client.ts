@@ -10,10 +10,10 @@ const MODULE_NAME = "timesheetModule"
 angular.module(MODULE_NAME, ["angular-search-box", "angular-loading-bar", "chart.js", "LocalStorageModule", "ngRoute", "sticky", "ui.utils.masks"])
 
 angular.module(MODULE_NAME).config(["$routeProvider", function($routeProvider: angular.route.IRouteProvider) {
-	$routeProvider.when("/timesheets/:start", {
+	$routeProvider.when("/users/:userId/timesheets/:start", {
 		templateUrl: "timesheet.html"
 	}).otherwise({
-		redirectTo: `/timesheets/${moment().format("YYYY-MM-DD")}`
+		redirectTo: `/users/me/timesheets/${moment().format("YYYY-MM-DD")}`
 	})
 }])
 
@@ -62,12 +62,12 @@ interface IRowState {
 	visible: boolean
 }
 
-angular.module(MODULE_NAME).controller("timesheetController", ["$http", "localStorageService", "$route", "$scope", function($http: angular.IHttpService, localStorageService: angular.local.storage.ILocalStorageService, $route: angular.route.IRouteService, $scope: ITimesheetScope) {	
+angular.module(MODULE_NAME).controller("timesheetController", ["$http", "localStorageService", "$location", "$route", "$scope", function($http: angular.IHttpService, localStorageService: angular.local.storage.ILocalStorageService, $location: angular.ILocationService, $route: angular.route.IRouteService, $scope: ITimesheetScope) {
+	const BASE_URL = "http://localhost:8080"
 	$scope.initialize = function() {
 		$http<api.ITimesheetResource>({
 			method: "GET",
-			url: `http://localhost:8080/timesheets/${$route.current.params["start"]}`,
-			params: $route.current.params
+			url: `${BASE_URL}${$location.url()}`
 		}).then(function(response) {
 			$scope.timesheet = response.data
 			$scope.updateChart()
@@ -92,7 +92,7 @@ angular.module(MODULE_NAME).controller("timesheetController", ["$http", "localSt
 			}
 			$http({
 				method: "PATCH",
-				url: `http://localhost:8080${$scope.timesheet._links["self"].href}`,
+				url: `${BASE_URL}${$scope.timesheet._links["self"].href}`,
 				data: timesheet
 			}).then(function(response) {				
 				$scope.updateChart()

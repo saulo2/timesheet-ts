@@ -7,7 +7,6 @@ declare module api {
     interface IProjectRow {
         project: IProjectDto
         taskRows: ITaskRow[]
-        hidden: boolean
     }
     
     interface IProjectDto {
@@ -18,7 +17,6 @@ declare module api {
     interface ITaskRow {
         task: ITaskDto
         entryCells: IEntryCell[]
-        hidden: boolean
     }
     
     interface ITaskDto {
